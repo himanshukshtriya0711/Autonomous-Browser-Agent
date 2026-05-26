@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autonomous Browser Agent</title>
+  <meta name="description" content="AI-powered autonomous browser agent that navigates the web, searches jobs, fills forms, and extracts data — all with LLM reasoning and LangGraph orchestration." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════ HEADER ══════════════════════════════════ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">Browser<span class="accent">Agent</span></span>
+        <span class="badge">AI</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#" class="nav-link active" data-panel="agent">Agent</a>
+        <a href="#" class="nav-link" data-panel="history">History</a>
+        <a href="#" class="nav-link" data-panel="resume">Resume</a>
+      </nav>
+      <div class="status-dot" id="serverStatus" title="Server status"></div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════ MAIN ════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- ─── Panel: Agent ────────────────────────────────────────────────────── -->
+    <section class="panel active" id="panel-agent">
+
+      <!-- Task input -->
+      <div class="task-card">
+        <div class="task-header">
+          <h1 class="task-title">Autonomous Web Agent</h1>
+          <p class="task-subtitle">Give any instruction. The AI plans, reasons, and executes autonomously.</p>
+        </div>
+
+        <div class="input-group">
+          <textarea
+            id="promptInput"
+            class="prompt-input"
+            placeholder="e.g.  Find remote GenAI internships and collect top opportunities..."
+            rows="3"
+            spellcheck="false"
+          ></textarea>
+          <div class="input-actions">
+            <div class="quick-prompts">
+              <button class="qp-btn" data-prompt="Find remote GenAI internships on Internshala and Wellfound">🔍 GenAI Internships</button>
+              <button class="qp-btn" data-prompt="Search AI and ML job opportunities on RemoteOK">🤖 AI/ML Jobs</button>
+              <button class="qp-btn" data-prompt="Find Python backend developer internships">🐍 Python Internships</button>
+              <button class="qp-btn" data-prompt="Search for RAG developer and LLM engineer roles">🧠 RAG/LLM Roles</button>
+            </div>
+            <div class="submit-row">
+              <div class="options-row">
+                <label class="toggle-label">
+                  <input type="checkbox" id="headlessMode" />
+                  <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                  <span>Headless</span>
+                </label>
+                <label class="select-label">
+                  Max steps
+                  <select id="maxSteps" class="steps-select">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                  </select>
+                </label>
+              </div>
+              <button id="submitBtn" class="submit-btn" onclick="submitTask()">
+                <span class="btn-icon">▶</span> Run Agent
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active task status bar -->
+      <div class="status-bar" id="statusBar" style="display:none;">
+        <div class="status-bar-inner">
+          <span class="status-spinner" id="statusSpinner"></span>
+          <span id="statusText">Initialising…</span>
+          <span class="task-id-label" id="taskIdLabel"></span>
+          <button class="cancel-btn" id="cancelBtn" onclick="cancelTask()">✕ Cancel</button>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <!-- Two-column layout: logs + results -->
+      <div class="workspace" id="workspace" style="display:none;">
+
+        <!-- Terminal log pane -->
+        <div class="pane log-pane">
+          <div class="pane-header">
+            <span class="pane-title">
+              <span class="dot dot-green"></span> Agent Logs
+            </span>
+            <button class="pane-action" onclick="clearLogs()">Clear</button>
+          </div>
+          <div class="terminal" id="terminal"></div>
+        </div>
+
+        <!-- Results pane -->
+        <div class="pane result-pane">
+          <div class="pane-header">
+            <span class="pane-title">
+              <span class="dot dot-blue"></span> Results
+            </span>
+            <div class="pane-actions">
+              <button class="pane-action" onclick="copyResults()">Copy JSON</button>
+              <button class="pane-action" onclick="downloadResults()">⬇ Export</button>
+            </div>
+          </div>
+          <div class="result-area" id="resultArea">
+            <div class="result-placeholder">
+              <span class="placeholder-icon">◎</span>
+              <p>Results will appear here after the agent completes.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── Panel: History ──────────────────────────────────────────────────── -->
+    <section class="panel" id="panel-history">
+      <div class="panel-header-row">
+        <h2 class="panel-heading">Job Memory</h2>
+        <div class="panel-toolbar">
+          <input type="text" id="jobSearchInput" class="search-input-small" placeholder="Search stored jobs…" oninput="searchJobs(this.value)" />
+          <button class="action-btn" onclick="loadJobHistory()">↻ Refresh</button>
+          <button class="action-btn danger" onclick="clearJobHistory()">🗑 Clear</button>
+        </div>
+      </div>
+      <div class="job-grid" id="jobGrid">
+        <div class="empty-state">
+          <p>No jobs in memory yet. Run a job search task to populate this.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Panel: Resume ───────────────────────────────────────────────────── -->
+    <section class="panel" id="panel-resume">
+      <div class="panel-header-row">
+        <h2 class="panel-heading">Resume Parser</h2>
+      </div>
+      <div class="resume-layout">
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="resumeFile" accept=".pdf" style="display:none;" onchange="uploadResume()" />
+          <div class="upload-inner" onclick="document.getElementById('resumeFile').click()">
+            <span class="upload-icon">📄</span>
+            <p class="upload-text">Drop your PDF resume here or click to upload</p>
+            <span class="upload-hint">Supports PDF · Max 10MB</span>
+          </div>
+        </div>
+        <div class="resume-result" id="resumeResult" style="display:none;"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═════════════════════════════ TOAST ═════════════════════════════════════ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

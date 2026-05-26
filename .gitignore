@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment secrets
+.env
+
+# ChromaDB vector store
+chroma_db/
+
+# Uploaded files
+uploads/pdfs/
+uploads/*.pdf
+
+# Logs
+logs/*.log
+
+# Playwright state
+playwright-state.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
