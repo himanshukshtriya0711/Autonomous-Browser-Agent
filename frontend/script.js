@@ -16,7 +16,11 @@
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const API_BASE = 'http://localhost:8000/api';
+const DEFAULT_API_ORIGIN = 'http://localhost:8001';
+const API_ORIGIN = window.location.protocol === 'file:'
+  ? DEFAULT_API_ORIGIN
+  : window.location.origin;
+const API_BASE = `${API_ORIGIN}/api`;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
